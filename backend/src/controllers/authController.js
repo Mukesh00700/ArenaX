@@ -46,7 +46,7 @@ export const signup = async(req,res)=>{
             <p>Welcome to our  App! Track your matches, ranking, and stats!</p>`
         )
 
-        const token = jwt.sign({id:newUser._id},process.env.JWT_SECRET,{expiresIn:"7d"});
+        const token = jwt.sign({_id:newUser._id},process.env.JWT_SECRET,{expiresIn:"7d"});
         res.status(201).json({token,user:{username,email,firstname,lastname}});
         
     }catch(err){
@@ -57,19 +57,20 @@ export const signup = async(req,res)=>{
 
 //Manula login
 export const login = async(req,res)=>{
+    // console.log(req.body);
     try{
         const validationData = loginSchema.safeParse(req.body);
         console.log(validationData);
         if(!validationData.success){
             //Sending field specific errror
-            console.log(validationData.error);
+            // console.log(validationData.error);
             const errors = validationData.error.errors.map(err=>({
                 field : err.path[0],
                 message :  err.message
             }));
             return res.status(400).json({errors});
         }
-        console.log(validationData);
+        // console.log(validationData);
         const {identifier,password} = validationData.data;
         const existingUser = await User.findOne({
             $or: [{ email: identifier }, { username: identifier }]
@@ -79,7 +80,7 @@ export const login = async(req,res)=>{
         const matchingPass =  bcrypt.compare(password,existingUser.password);
         if(!matchingPass) return res.status(400).json({msg:"Invalid credentials"});
         
-        const token = jwt.sign({id:existingUser._id},process.env.JWT_SECRET,{expiresIn:"7d"});
+        const token = jwt.sign({_id:existingUser._id},process.env.JWT_SECRET,{expiresIn:"7d"});
         res.status(201).json({token,existingUser:{identifier}})
     
     }catch(err){

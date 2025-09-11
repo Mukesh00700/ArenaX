@@ -111,8 +111,8 @@ export const rejectRequest = async(req,res)=>{
 }
 
 export const allRequestRecieved = async(req,res)=>{
+    const userId = req.user._id;
     try{
-        const userId = req.user._id;
         const requests = await Request.find({ 
         to: userId, 
         status: "PENDING" // only showing pending requests
@@ -129,8 +129,9 @@ export const allRequestRecieved = async(req,res)=>{
 }
 
 export const allRequestSent = async(req,res)=>{
+    const userId = req.user._id;
+    console.log(userId);
     try{
-        const userId = req.user._id;
         const requests = await Request.find({
             from:userId,
             status:"PENDING"

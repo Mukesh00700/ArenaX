@@ -13,7 +13,7 @@ const requestSchema = new Schema({
         enum:["ACCEPTED","PENDING","DECLINED","CANCELLED"],
         default:"PENDING"
     },
-    createdAt:{type:Date, defalult:Date.now},
+    createdAt:{type:Date, default:Date.now},
     respondedAt:{type:Date}
 },{timestamps:true});
 
