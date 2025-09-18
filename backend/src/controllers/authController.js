@@ -76,12 +76,12 @@ export const login = async(req,res)=>{
             $or: [{ email: identifier }, { username: identifier }]
         })
         if(!existingUser) return res.status(400).json({msg:"Invalid credentials"});
-        console.log(password,existingUser.password,existingUser);
-        const matchingPass =  bcrypt.compare(password,existingUser.password);
+        // console.log(password,existingUser.password,existingUser);
+        const matchingPass = await bcrypt.compare(password,existingUser.password);
         if(!matchingPass) return res.status(400).json({msg:"Invalid credentials"});
         
         const token = jwt.sign({_id:existingUser._id},process.env.JWT_SECRET,{expiresIn:"7d"});
-        res.status(201).json({token,existingUser:{identifier}})
+        res.status(200).json({token,existingUser:{identifier}})
     
     }catch(err){
         console.log(`Some error occured ${err}`);
