@@ -1,5 +1,5 @@
-import User from "../models/User";
-
+import User from "../models/User.js";
+import {upload,cloudinary} from "../config/cloudinary.js"
 export const myProfileController = async(req,res)=>{
     try{
         const id = req.user._id;
@@ -15,15 +15,13 @@ export const myProfileController = async(req,res)=>{
 export const updateProfilePicture = async(req,res)=>{
     try{
         const id = req.user._id;
-        const user = await User.findById(id);
-        const {imageUrl} = req.body;
+        const imageUrl = req.file.path;
         if(!imageUrl) return res.status(400).json({msg:"Image url must be provided"});
         const updatedUser = await User.findByIdAndUpdate(
             id,
             { $set: { imageUrl: imageUrl } },
             { new: true }
         ).select('imageUrl');
-        if(!user) return res.status(404).json({msg:"User not found"});
          return res.status(200).json({
             success: true,
             message: "Profile picture updated successfully.",

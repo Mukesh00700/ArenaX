@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import { loginSchema, singupSchema } from "../validators/authValidator.js";
 import sendEmail from "../utils/mailer.js";
 import { OAuth2Client } from "google-auth-library"
-
+const default_img = "https://res.cloudinary.com/dcfde1cy7/image/upload/v1759335293/Profile_pic_yvb4qq.png";
 //Singup(Manual)
 export const signup = async(req,res)=>{
     console.log(req.body);
@@ -33,8 +33,8 @@ export const signup = async(req,res)=>{
         const firstname = req.body.firstname;
         const lastname = req.body.lastname;
         const gender = req.body.gender;
-
-        const newUser = new User({username,email,firstname,lastname,password:hashedPassword,gender});
+        const imageUrl = default_img;
+        const newUser = new User({username,email,firstname,lastname,password:hashedPassword,gender,imageUrl,completeProfile:true});
         await newUser.save();
 
         //Welcome email
@@ -90,7 +90,7 @@ export const login = async(req,res)=>{
 }
 
 //Google login
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
 export const googleAuth = async (req,res)=>{
     const { token } = req.body;
     try{
@@ -101,29 +101,28 @@ export const googleAuth = async (req,res)=>{
         const payload = ticket.getPayload();
         const {sub,email,name,picture} = payload;
         //Chekcing if user exist
-        const user = await User.findOne({email:email});
+        let user = await User.findOne({email:email});
         if(!user){
-            const newUser = new User({
+                user = new User({
                 googleId:sub,
                 email:email,
                 imageUrl:picture,
                 password:null,
-                fromGoogle:true
+                fromGoogle:true,
+                imageUrl:default_img
             })
-            await newUser.save();
-            return res.status(201).json({
-                new:true,
-                email,
-                userId:newUser._id
-            })
+            await user.save();
         }
-        console.log(email,name,picture);
-        return res.status(201).json({
-            user
+        // console.log(email,name,picture);
+        console.log(user);
+        const jwtToken = jwt.sign({_id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        return res.status(200).json({
+            user,
+            token:jwtToken
         })
     }catch(err){
-        console.log(`Some error occured ${err}`);
-        return res.status(500).json({mag:"Google Authenicaton failed"});
+        console.log(`Some error occured in authController ${err}`);
+        return res.status(500).json({msg:"Google Authenicaton failed"});
     }
 }
 
@@ -142,7 +141,7 @@ export const completeProfile = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { username, firstName, lastName },
+      { username, firstName, lastName,completeProfile:true },
       {new:true}
     );
 
@@ -152,7 +151,7 @@ export const completeProfile = async (req, res) => {
             message:"User not found"
         })
     }
-    res.json({ success: true, user });
+    res.status(201).json({ success: true, user });
 
   } catch (err) {
     res.status(500).json({ message: "Failed to complete profile", err });

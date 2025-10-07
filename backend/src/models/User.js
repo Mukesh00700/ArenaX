@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     totalWin:{type:Number,default:0},
     totalLoss:{type:Number,default:0},
     imageUrl: {type:String},
+    completeProfile:{type:Boolean,default:false},
 
     //if signing using google
     fromGoogle:{type:Boolean,default:false},
